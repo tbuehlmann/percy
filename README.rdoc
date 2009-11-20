@@ -1,0 +1,69 @@
+= Percy 0.0.2
+
+== Configuring the bot
+=== mybot.rb
+  require 'lib/percy'
+  
+  bot = Percy.new
+  
+  bot.configure do |c|
+    c.server   = 'chat.eu.freenode.net'
+    c.port     = 6667
+    c.password = nil
+    c.nick     = 'Percyguy'
+    c.username = 'Percy'
+    c.verbose  = true
+  end
+
+Start it with <tt>ruby mybot.rb</tt>.
+
+== Events
+Handle events with:
+  bot.on :connect do
+    # join channels
+    # do things
+  end
+  
+  bot.on :channel, /^foo!/ do |env|
+    # available variables: env[:nick], env[:user], env[:host], env[:channel], env[:message]
+  end
+  
+  bot.on :query, /^bar!/ do |env|
+    # available variables: env[:nick], env[:user], env[:host], env[:message]
+  end
+  
+  bot.on :join do |env|
+    # available variables: env[:nick], env[:user], env[:host], env[:channel]
+  end
+  
+  bot.on :part do |env|
+    # available variables: env[:nick], env[:user], env[:host], env[:channel], env[:message]
+  end
+  
+  bot.on :quit do |env|
+    # available variables: env[:nick], env[:user], env[:host], env[:message]
+  end
+  
+  bot.on :nickchange do |env|
+    # available variables: env[:nick], env[:user], env[:host], env[:new_nick]
+  end
+  
+  bot.on :kick do |env|
+    # available variables: env[:nick], env[:user], env[:host], env[:new_nick], env[:channel], env[:victim]
+  end
+
+== Methods availabe
+* message(recipient, msg)
+* notice(recipient, msg)
+* action(recipient, msg)
+* mode(recipient, option)
+* channellimit(channel)
+* kick(channel, user, reason)
+* topic(channel, topic)
+* join(channel, password = nil)
+* part(channel, msg)
+* quit(msg = nil)
+* users_on(channel)
+
+== License
+Coming soon
