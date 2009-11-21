@@ -24,7 +24,7 @@ class Percy
     @on_nickchange = []
     @on_kick       = []
     
-    # synchronizer
+    # observer synchronizer
     @mutex = Mutex.new
   end
   
@@ -147,13 +147,17 @@ class Percy
   
   # add observer
   def add_observer
-    @observers += 1
+    @mutex.synchronize do
+      @observers += 1
+    end
   end
   
   # remove observer
   def remove_observer
-    @observers -= 1 # remove observer
-    @temp_socket = [] if @observers == 0 # clear @temp_socket if no observers are active
+    @mutex.synchronize do
+      @observers -= 1 # remove observer
+      @temp_socket = [] if @observers == 0 # clear @temp_socket if no observers are active
+    end
   end
   
   # returns all users on a specific channel
@@ -179,15 +183,13 @@ class Percy
     end
   end
   
-  # parsing incoming traffic
+  # parses incoming traffic
   def parse(type, env = nil)
     case type
       when :connect
         @on_connect.each do |block|
           Thread.new do
-            @mutex.synchronize do
-              block.call
-            end
+            block.call
           end
         end      
       
@@ -195,9 +197,7 @@ class Percy
         @on_channel.each do |method|
           if env[:message] =~ method[:match]
             Thread.new do
-              @mutex.synchronize do
-                method[:proc].call(env)
-              end
+              method[:proc].call(env)
             end
           end
         end
@@ -221,9 +221,7 @@ class Percy
         @on_query.each do |method|
           if env[:message] =~ method[:match]
             Thread.new do
-              @mutex.synchronize do
-                method[:proc].call(env)
-              end
+              method[:proc].call(env)
             end
           end
         end
@@ -231,45 +229,35 @@ class Percy
       when :join
         @on_join.each do |block|
           Thread.new do
-            @mutex.synchronize do
-              block.call(env)
-            end
+            block.call(env)
           end
         end
       
       when :part
         @on_part.each do |block|
           Thread.new do
-            @mutex.synchronize do
-              block.call(env)
-            end
+            block.call(env)
           end
         end
       
       when :quit
         @on_quit.each do |block|
           Thread.new do
-            @mutex.synchronize do
-              block.call(env)
-            end
+            block.call(env)
           end
         end
       
       when :nickchange
         @on_nickchange.each do |block|
           Thread.new do
-            @mutex.synchronize do
-              block.call(env)
-            end
+            block.call(env)
           end
         end
       
       when :kick
         @on_kick.each do |block|
           Thread.new do
-            @mutex.synchronize do
-              block.call(env)
-            end
+            block.call(env)
           end
         end
     end
