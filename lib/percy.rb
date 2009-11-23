@@ -77,6 +77,31 @@ class Percy
     end
   end
   
+  # check whether an user is online
+  def is_online?(nick)
+    add_observer
+    raw "WHOIS #{nick}"
+    
+    begin
+      Timeout::timeout(10) do
+        loop do
+          @temp_socket.each do |line|
+            if line =~ /^:(\S+) 311 (\S+) #{nick} /
+              return true
+            elsif line =~ /^:(\S+) 401 (\S+) #{nick} /
+              return false
+            end
+          end
+          sleep 0.5
+        end
+      end
+    rescue Timeout::Error
+      return false
+    ensure
+      remove_observer
+    end
+  end
+  
   # kick a user
   def kick(channel, user, reason)
     if reason
@@ -186,80 +211,80 @@ class Percy
   # parses incoming traffic
   def parse(type, env = nil)
     case type
-      when :connect
-        @on_connect.each do |block|
+    when :connect
+      @on_connect.each do |block|
+        Thread.new do
+          block.call
+        end
+      end      
+    
+    when :channel
+      @on_channel.each do |method|
+        if env[:message] =~ method[:match]
           Thread.new do
-            block.call
-          end
-        end      
-      
-      when :channel
-        @on_channel.each do |method|
-          if env[:message] =~ method[:match]
-            Thread.new do
-              method[:proc].call(env)
-            end
+            method[:proc].call(env)
           end
         end
+      end
+    
+    when :query
+      # version respones
+      if env[:message] == "\001VERSION\001"
+        notice env[:nick], "\001VERSION #{VERSION}\001"
+      end
       
-      when :query
-        # version respones
-        if env[:message] == "\001VERSION\001"
-          notice env[:nick], "\001VERSION #{VERSION}\001"
-        end
-        
-        # time response
-        if env[:message] == "\001TIME\001"
-          notice env[:nick], "\001TIME #{Time.now.strftime('%a %b %d %H:%M:%S %Y')}\001"
-        end
-        
-        # ping response
-        if env[:message] =~ /\001PING (\d+)\001/
-          notice env[:nick], "\001PING #{$1}\001"
-        end
-        
-        @on_query.each do |method|
-          if env[:message] =~ method[:match]
-            Thread.new do
-              method[:proc].call(env)
-            end
-          end
-        end
+      # time response
+      if env[:message] == "\001TIME\001"
+        notice env[:nick], "\001TIME #{Time.now.strftime('%a %b %d %H:%M:%S %Y')}\001"
+      end
       
-      when :join
-        @on_join.each do |block|
+      # ping response
+      if env[:message] =~ /\001PING (\d+)\001/
+        notice env[:nick], "\001PING #{$1}\001"
+      end
+      
+      @on_query.each do |method|
+        if env[:message] =~ method[:match]
           Thread.new do
-            block.call(env)
+            method[:proc].call(env)
           end
         end
-      
-      when :part
-        @on_part.each do |block|
-          Thread.new do
-            block.call(env)
-          end
+      end
+    
+    when :join
+      @on_join.each do |block|
+        Thread.new do
+          block.call(env)
         end
-      
-      when :quit
-        @on_quit.each do |block|
-          Thread.new do
-            block.call(env)
-          end
+      end
+    
+    when :part
+      @on_part.each do |block|
+        Thread.new do
+          block.call(env)
         end
-      
-      when :nickchange
-        @on_nickchange.each do |block|
-          Thread.new do
-            block.call(env)
-          end
+      end
+    
+    when :quit
+      @on_quit.each do |block|
+        Thread.new do
+          block.call(env)
         end
-      
-      when :kick
-        @on_kick.each do |block|
-          Thread.new do
-            block.call(env)
-          end
+      end
+    
+    when :nickchange
+      @on_nickchange.each do |block|
+        Thread.new do
+          block.call(env)
         end
+      end
+    
+    when :kick
+      @on_kick.each do |block|
+        Thread.new do
+          block.call(env)
+        end
+      end
     end
   end
   
@@ -274,32 +299,32 @@ class Percy
       puts "#{Time.now.strftime('%d.%m.%Y %H:%M:%S')} << #{line.chomp}" if @config.verbose
       
       case line.chomp
-        when /^PING \S+$/
-          raw line.chomp.gsub('PING', 'PONG')
-        
-        when /End of \/M/ # ...
-          parse(:connect)
-        
-        when /^:(\S+)!(\S+)@(\S+) PRIVMSG #(\S+) :/
-          parse(:channel, :nick => $1, :user => $2, :host => $3, :channel => "##{$4}", :message => $')
-        
-        when /^:(\S+)!(\S+)@(\S+) PRIVMSG (\S+) :/
-          parse(:query, :nick => $1, :user => $2, :host => $3, :message => $')
-        
-        when /^:(\S+)!(\S+)@(\S+) JOIN (\S+)$/
-          parse(:join, :nick => $1, :user => $2, :host => $3, :channel => $4)
-        
-        when /^:(\S+)!(\S+)@(\S+) PART (\S+)/
-          parse(:part, :nick => $1, :user => $2, :host => $3, :channel => $4, :message => $'.sub(' :', ''))
-        
-        when /^:(\S+)!(\S+)@(\S+) QUIT/
-          parse(:quit, :nick => $1, :user => $2, :host => $3, :message => $'.sub(' :', ''))
-        
-        when /^:(\S+)!(\S+)@(\S+) NICK :/
-          parse(:nickchange, :nick => $1, :user => $2, :host => $3, :new_nick => $')
-        
-        when /^:(\S+)!(\S+)@(\S+) KICK (\S+) (\S+) :/
-          parse(:kick, :nick => $1, :user => $2, :host => $3, :channel => $4, :victim => $5, :reason => $')
+      when /^PING \S+$/
+        raw line.chomp.gsub('PING', 'PONG')
+      
+      when /End of \/M/ # ...
+        parse(:connect)
+      
+      when /^:(\S+)!(\S+)@(\S+) PRIVMSG #(\S+) :/
+        parse(:channel, :nick => $1, :user => $2, :host => $3, :channel => "##{$4}", :message => $')
+      
+      when /^:(\S+)!(\S+)@(\S+) PRIVMSG (\S+) :/
+        parse(:query, :nick => $1, :user => $2, :host => $3, :message => $')
+      
+      when /^:(\S+)!(\S+)@(\S+) JOIN (\S+)$/
+        parse(:join, :nick => $1, :user => $2, :host => $3, :channel => $4)
+      
+      when /^:(\S+)!(\S+)@(\S+) PART (\S+)/
+        parse(:part, :nick => $1, :user => $2, :host => $3, :channel => $4, :message => $'.sub(' :', ''))
+      
+      when /^:(\S+)!(\S+)@(\S+) QUIT/
+        parse(:quit, :nick => $1, :user => $2, :host => $3, :message => $'.sub(' :', ''))
+      
+      when /^:(\S+)!(\S+)@(\S+) NICK :/
+        parse(:nickchange, :nick => $1, :user => $2, :host => $3, :new_nick => $')
+      
+      when /^:(\S+)!(\S+)@(\S+) KICK (\S+) (\S+) :/
+        parse(:kick, :nick => $1, :user => $2, :host => $3, :channel => $4, :victim => $5, :reason => $')
       end
       
       if @observers > 0
