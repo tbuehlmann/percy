@@ -64,6 +64,7 @@ Handle events with:
 * part(channel, msg)
 * quit(msg = nil)
 * users_on(channel)
+* is_online?(nick)
 
 == License
 Coming soon
