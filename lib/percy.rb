@@ -86,9 +86,9 @@ class Percy
       Timeout::timeout(10) do
         loop do
           @temp_socket.each do |line|
-            if line =~ /^:(\S+) 311 (\S+) #{nick} /
+            if line =~ /^:(\S+) 311 (\S+) #{nick} /i
               return true
-            elsif line =~ /^:(\S+) 401 (\S+) #{nick} /
+            elsif line =~ /^:(\S+) 401 (\S+) #{nick} /i
               return false
             end
           end
