@@ -25,6 +25,7 @@ class PercyLogger
     end
     
     @file = File.open(@filename, 'w+')
+    @file.sync = true
   end
   
   def write(severity, message)
