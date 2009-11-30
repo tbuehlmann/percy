@@ -2,7 +2,7 @@ require 'socket'
 require 'timeout'
 require 'thread'
 
-class Percy  
+class Percy
   VERSION = 'Percy 0.0.2 (http://github.com/tbuehlmann/percy)'
 
   Config = Struct.new(:server, :port, :password, :nick, :username, :verbose)
@@ -36,7 +36,7 @@ class Percy
   # raw irc messages
   def raw(msg)
     @socket.puts "#{msg}\r\n"
-    puts "#{Time.now.strftime('%d.%m.%Y %H:%M:%S')} >> #{msg}" if @config.verbose  
+    puts "#{Time.now.strftime('%d.%m.%Y %H:%M:%S')} >> #{msg}" if @config.verbose
   end
   
   # send a message
@@ -331,5 +331,7 @@ class Percy
         @temp_socket << line.chomp
       end
     end
+    
+    puts "#{Time.now.strftime('%d.%m.%Y %H:%M:%S')} -- Percy terminated" if @config.verbose
   end
 end
