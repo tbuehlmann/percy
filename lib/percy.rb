@@ -1,16 +1,17 @@
+require "#{PERCY_ROOT}/lib/percylogger"
 require 'socket'
 require 'timeout'
 require 'thread'
 
 class Percy
   VERSION = 'Percy 0.0.2 (http://github.com/tbuehlmann/percy)'
-
-  Config = Struct.new(:server, :port, :password, :nick, :username, :verbose)
+  
+  Config = Struct.new(:server, :port, :password, :nick, :username, :verbose, :logging)
   
   def initialize
-    @config = Config.new("localhost", 6667, nil, 'Percy', 'Percy', true)
+    @config = Config.new("localhost", 6667, nil, 'Percy', 'Percy', true, false)
     
-    # callback helper
+    # helper variables for getting server return values
     @observers = 0
     @temp_socket = []
     
@@ -31,11 +32,15 @@ class Percy
   # configure block
   def configure(&block)
     block.call(@config)
+    
+    # logger
+    @traffic_logger = PercyLogger.new("#{PERCY_ROOT}/logs/traffic.log") if @config.logging
   end
   
   # raw irc messages
   def raw(msg)
     @socket.puts "#{msg}\r\n"
+    @traffic_logger.info(">> #{msg}") if @traffic_logger
     puts "#{Time.now.strftime('%d.%m.%Y %H:%M:%S')} >> #{msg}" if @config.verbose
   end
   
@@ -216,7 +221,7 @@ class Percy
         Thread.new do
           block.call
         end
-      end      
+      end
     
     when :channel
       @on_channel.each do |method|
@@ -290,12 +295,16 @@ class Percy
   
   # connect!
   def connect
+    @traffic_logger.info('-- Starting Percy') if @traffic_logger
+    puts "#{Time.now.strftime('%d.%m.%Y %H:%M:%S')} -- Starting Percy"
+    
     @socket = TCPSocket.open(@config.server, @config.port)
     raw "PASS #{@config.password}" if @config.password
     raw "NICK #{@config.nick}"
     raw "USER #{@config.nick} 0 * :#{@config.username}"
     
     while line = @socket.gets
+      @traffic_logger.info("<< #{line.chomp}") if @traffic_logger
       puts "#{Time.now.strftime('%d.%m.%Y %H:%M:%S')} << #{line.chomp}" if @config.verbose
       
       case line.chomp
@@ -332,6 +341,7 @@ class Percy
       end
     end
     
-    puts "#{Time.now.strftime('%d.%m.%Y %H:%M:%S')} -- Percy terminated" if @config.verbose
+    @traffic_logger.info('-- Percy terminated') if @traffic_logger
+    puts "#{Time.now.strftime('%d.%m.%Y %H:%M:%S')} -- Percy terminated"
   end
 end
