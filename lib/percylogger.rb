@@ -9,29 +9,29 @@ class PercyLogger
   UNKNOWN = 5
   LEVEL   = ['DEBUG', 'INFO', 'WARN', 'ERROR', 'FATAL', 'UNKNOWN']
   
-  attr_accessor :level, :time_format
+  attr_accessor :level, :time_format, :file
   
-  def initialize(file = 'log.log', level = DEBUG, time_format = '%d.%m.%Y %H:%M:%S')
-    @file = file
+  def initialize(filename = 'log.log', level = DEBUG, time_format = '%d.%m.%Y %H:%M:%S')
+    @filename = filename
     @level = level
     @time_format = time_format
     @mutex = Mutex.new
     
-    unless File.exist?(@file)
-      unless File.directory?(File.dirname(@file))
-        Dir.mkdir(File.dirname(@file))
+    unless File.exist?(@filename)
+      unless File.directory?(File.dirname(@filename))
+        Dir.mkdir(File.dirname(@filename))
       end
-      File.new(@file, 'w+')
+      File.new(@filename, 'w+')
     end
+    
+    @file = File.open(@filename, 'w+')
   end
   
   def write(severity, message)
     begin
       if severity >= @level
         @mutex.synchronize do
-          File.open(@file, 'a+') do |file|
-            file.puts "#{LEVEL[severity]} #{Time.now.strftime(@time_format)} #{message}"
-          end
+          @file.puts "#{LEVEL[severity]} #{Time.now.strftime(@time_format)} #{message}"
         end
       end
     rescue => e
