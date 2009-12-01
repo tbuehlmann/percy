@@ -29,6 +29,9 @@ class Percy
     
     # observer synchronizer
     @mutex = Mutex.new
+    
+    # running variable (provisional solution for rejoining at netsplit)
+    @running = true
   end
   
   # configure block
@@ -154,6 +157,8 @@ class Percy
     else
       raw 'QUIT'
     end
+    
+    @running = false # so Percy does not reconnect after the socket has been closed
   end
   
   # on method
@@ -354,55 +359,69 @@ class Percy
   
   # connect!
   def connect
-    @traffic_logger.info('-- Starting Percy') if @traffic_logger
-    puts "#{Time.now.strftime('%d.%m.%Y %H:%M:%S')} -- Starting Percy"
-    
-    @socket = TCPSocket.open(@config.server, @config.port)
-    raw "PASS #{@config.password}" if @config.password
-    raw "NICK #{@config.nick}"
-    raw "USER #{@config.nick} 0 * :#{@config.username}"
-    
-    while line = @socket.gets
-      @traffic_logger.info("<< #{line.chomp}") if @traffic_logger
-      puts "#{Time.now.strftime('%d.%m.%Y %H:%M:%S')} << #{line.chomp}" if @config.verbose
-      
-      case line.chomp
-      when /^PING \S+$/
-        raw line.chomp.gsub('PING', 'PONG')
-      
-      when /End of \/M/ # ...
-        parse(:connect)
-      
-      when /^:(\S+)!(\S+)@(\S+) PRIVMSG #(\S+) :/
-        parse(:channel, :nick => $1, :user => $2, :host => $3, :channel => "##{$4}", :message => $')
-      
-      when /^:(\S+)!(\S+)@(\S+) PRIVMSG (\S+) :/
-        parse(:query, :nick => $1, :user => $2, :host => $3, :message => $')
-      
-      when /^:(\S+)!(\S+)@(\S+) JOIN (\S+)$/
-        parse(:join, :nick => $1, :user => $2, :host => $3, :channel => $4)
-      
-      when /^:(\S+)!(\S+)@(\S+) PART (\S+)/
-        parse(:part, :nick => $1, :user => $2, :host => $3, :channel => $4, :message => $'.sub(' :', ''))
-      
-      when /^:(\S+)!(\S+)@(\S+) QUIT/
-        parse(:quit, :nick => $1, :user => $2, :host => $3, :message => $'.sub(' :', ''))
-      
-      when /^:(\S+)!(\S+)@(\S+) NICK :/
-        parse(:nickchange, :nick => $1, :user => $2, :host => $3, :new_nick => $')
-      
-      when /^:(\S+)!(\S+)@(\S+) KICK (\S+) (\S+) :/
-        parse(:kick, :nick => $1, :user => $2, :host => $3, :channel => $4, :victim => $5, :reason => $')
+    begin
+      while @running
+        @traffic_logger.info('-- Starting Percy') if @traffic_logger
+        puts "#{Time.now.strftime('%d.%m.%Y %H:%M:%S')} -- Starting Percy"
+        
+        
+        @socket = TCPSocket.open(@config.server, @config.port)
+        raw "PASS #{@config.password}" if @config.password
+        raw "NICK #{@config.nick}"
+        raw "USER #{@config.nick} 0 * :#{@config.username}"
+        
+        while line = @socket.gets
+          @traffic_logger.info("<< #{line.chomp}") if @traffic_logger
+          puts "#{Time.now.strftime('%d.%m.%Y %H:%M:%S')} << #{line.chomp}" if @config.verbose
+          
+          case line.chomp
+          when /^PING \S+$/
+            raw line.chomp.gsub('PING', 'PONG')
+          
+          when /End of \/M/ # ...
+            parse(:connect)
+          
+          when /^:(\S+)!(\S+)@(\S+) PRIVMSG #(\S+) :/
+            parse(:channel, :nick => $1, :user => $2, :host => $3, :channel => "##{$4}", :message => $')
+          
+          when /^:(\S+)!(\S+)@(\S+) PRIVMSG (\S+) :/
+            parse(:query, :nick => $1, :user => $2, :host => $3, :message => $')
+          
+          when /^:(\S+)!(\S+)@(\S+) JOIN (\S+)$/
+            parse(:join, :nick => $1, :user => $2, :host => $3, :channel => $4)
+          
+          when /^:(\S+)!(\S+)@(\S+) PART (\S+)/
+            parse(:part, :nick => $1, :user => $2, :host => $3, :channel => $4, :message => $'.sub(' :', ''))
+          
+          when /^:(\S+)!(\S+)@(\S+) QUIT/
+            parse(:quit, :nick => $1, :user => $2, :host => $3, :message => $'.sub(' :', ''))
+          
+          when /^:(\S+)!(\S+)@(\S+) NICK :/
+            parse(:nickchange, :nick => $1, :user => $2, :host => $3, :new_nick => $')
+          
+          when /^:(\S+)!(\S+)@(\S+) KICK (\S+) (\S+) :/
+            parse(:kick, :nick => $1, :user => $2, :host => $3, :channel => $4, :victim => $5, :reason => $')
+          end
+          
+          if @observers > 0
+            @temp_socket << line.chomp
+          end
+        end
+        
+        @traffic_logger.info('-- Percy disconnected') if @traffic_logger
+        puts "#{Time.now.strftime('%d.%m.%Y %H:%M:%S')} -- Percy disconnected"
+      end
+    rescue => e
+      @error_logger.error(e.message)              
+      e.backtrace.each do |line|
+        @error_logger.error(line)
       end
       
-      if @observers > 0
-        @temp_socket << line.chomp
-      end
+      @traffic_logger.info('-- Percy disconnected') if @traffic_logger
+      puts "#{Time.now.strftime('%d.%m.%Y %H:%M:%S')} -- Percy disconnected"
+    ensure
+      @traffic_logger.file.close
+      @error_logger.file.close
     end
-    
-    @traffic_logger.info('-- Percy terminated') if @traffic_logger
-    @traffic_logger.file.close
-    @error_logger.file.close
-    puts "#{Time.now.strftime('%d.%m.%Y %H:%M:%S')} -- Percy terminated"
   end
 end
