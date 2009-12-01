@@ -3,6 +3,8 @@ require 'socket'
 require 'timeout'
 require 'thread'
 
+Thread.abort_on_exception = true
+
 class Percy
   VERSION = 'Percy 0.0.2 (http://github.com/tbuehlmann/percy)'
   
@@ -35,6 +37,7 @@ class Percy
     
     # logger
     @traffic_logger = PercyLogger.new("#{PERCY_ROOT}/logs/traffic.log") if @config.logging
+    @error_logger = PercyLogger.new("#{PERCY_ROOT}/logs/error.log") if @config.logging
   end
   
   # raw irc messages
@@ -219,7 +222,14 @@ class Percy
     when :connect
       @on_connect.each do |block|
         Thread.new do
-          block.call
+          begin
+            block.call
+          rescue => e
+            @error_logger.error(e.message)              
+            e.backtrace.each do |line|
+              @error_logger.error(line)
+            end
+          end
         end
       end
     
@@ -227,7 +237,14 @@ class Percy
       @on_channel.each do |method|
         if env[:message] =~ method[:match]
           Thread.new do
-            method[:proc].call(env)
+            begin
+              method[:proc].call(env)
+            rescue => e
+              @error_logger.error(e.message)              
+              e.backtrace.each do |line|
+                @error_logger.error(line)
+              end
+            end
           end
         end
       end
@@ -251,7 +268,14 @@ class Percy
       @on_query.each do |method|
         if env[:message] =~ method[:match]
           Thread.new do
-            method[:proc].call(env)
+            begin
+              method[:proc].call(env)
+            rescue => e
+              @error_logger.error(e.message)              
+              e.backtrace.each do |line|
+                @error_logger.error(line)
+              end
+            end
           end
         end
       end
@@ -259,35 +283,70 @@ class Percy
     when :join
       @on_join.each do |block|
         Thread.new do
-          block.call(env)
+          begin
+            block.call(env)
+          rescue => e
+            @error_logger.error(e.message)              
+            e.backtrace.each do |line|
+              @error_logger.error(line)
+            end
+          end
         end
       end
     
     when :part
       @on_part.each do |block|
         Thread.new do
-          block.call(env)
+          begin
+            block.call(env)
+          rescue => e
+            @error_logger.error(e.message)              
+            e.backtrace.each do |line|
+              @error_logger.error(line)
+            end
+          end
         end
       end
     
     when :quit
       @on_quit.each do |block|
         Thread.new do
-          block.call(env)
+          begin
+            block.call(env)
+          rescue => e
+            @error_logger.error(e.message)              
+            e.backtrace.each do |line|
+              @error_logger.error(line)
+            end
+          end
         end
       end
     
     when :nickchange
       @on_nickchange.each do |block|
         Thread.new do
-          block.call(env)
+          begin
+            block.call(env)
+          rescue => e
+            @error_logger.error(e.message)              
+            e.backtrace.each do |line|
+              @error_logger.error(line)
+            end
+          end
         end
       end
     
     when :kick
       @on_kick.each do |block|
         Thread.new do
-          block.call(env)
+          begin
+            block.call(env)
+          rescue => e
+            @error_logger.error(e.message)              
+            e.backtrace.each do |line|
+              @error_logger.error(line)
+            end
+          end
         end
       end
     end
