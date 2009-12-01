@@ -91,7 +91,7 @@ class Percy
   end
   
   # check whether an user is online
-  def is_online?(nick)
+  def is_online(nick)
     add_observer
     raw "WHOIS #{nick}"
     
@@ -99,9 +99,9 @@ class Percy
       Timeout::timeout(10) do
         loop do
           @temp_socket.each do |line|
-            if line =~ /^:(\S+) 311 (\S+) #{nick} /i
-              return true
-            elsif line =~ /^:(\S+) 401 (\S+) #{nick} /i
+            if line =~ /^:(\S+) 311 (\S+) (#{nick}) /i
+              return $3
+            elsif line =~ /^:\S+ 401 \S+ #{nick} /i
               return false
             end
           end

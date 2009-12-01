@@ -3,18 +3,20 @@
 == Configuring the bot
 
 === mybot.rb
-  require 'lib/percy'
-  
+  $:.unshift "#{File.expand_path(File.dirname(__FILE__))}/lib"
+  PERCY_ROOT = File.expand_path(File.dirname(__FILE__))
+
+  require 'rubygems'
+  require 'percy'
+
   bot = Percy.new
-  
+
   bot.configure do |c|
-    c.server   = 'chat.eu.freenode.net'
-    c.port     = 6667
-    c.password = nil
-    c.nick     = 'Percyguy'
-    c.username = 'Percy'
-    c.verbose  = true
-    c.logging  = true
+    c.server = 'chat.eu.freenode.net'
+    c.port = 6667
+    c.nick = 'Percyguy'
+    c.verbose = true
+    c.logging = true
   end
 
 Start it with <tt>ruby mybot.rb</tt>.
@@ -66,7 +68,7 @@ Handle events with:
 * part(channel, msg)
 * quit(msg = nil)
 * users_on(channel)
-* is_online?(nick)
+* is_online(nick)
 
 == License
 Copyright (c) 2009 Tobias Bühlmann
