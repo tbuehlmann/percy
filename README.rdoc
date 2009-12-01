@@ -1,4 +1,4 @@
-= Percy 0.0.2
+= Percy 0.0.3
 
 == Configuring the bot
 
