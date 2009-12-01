@@ -1,4 +1,6 @@
-require "#{PERCY_ROOT}/lib/percylogger"
+$:.unshift File.expand_path(File.dirname(__FILE__))
+
+require 'percylogger'
 require 'socket'
 require 'timeout'
 require 'thread'
