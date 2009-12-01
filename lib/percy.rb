@@ -228,7 +228,10 @@ class Percy
       @on_connect.each do |block|
         Thread.new do
           begin
-            block.call
+            unless @connected
+              @connected = true
+              block.call
+            end
           rescue => e
               if @error_logger
                 @error_logger.error(e.message)              
@@ -394,7 +397,7 @@ class Percy
           when /^PING \S+$/
             raw line.chomp.gsub('PING', 'PONG')
           
-          when /End of \/M/ # ...
+          when /^:(\S+) (376|422)/
             parse(:connect)
           
           when /^:(\S+)!(\S+)@(\S+) PRIVMSG #(\S+) :/
@@ -426,6 +429,7 @@ class Percy
         
         @traffic_logger.info('-- Percy disconnected') if @traffic_logger
         puts "#{Time.now.strftime('%d.%m.%Y %H:%M:%S')} -- Percy disconnected"
+        @connected = false
       end
     rescue => e
       @error_logger.error(e.message)              
@@ -435,6 +439,7 @@ class Percy
       
       @traffic_logger.info('-- Percy disconnected') if @traffic_logger
       puts "#{Time.now.strftime('%d.%m.%Y %H:%M:%S')} -- Percy disconnected"
+      @connected = false
     ensure
       @traffic_logger.file.close if @traffic_logger
       @error_logger.file.close if @error_logger
