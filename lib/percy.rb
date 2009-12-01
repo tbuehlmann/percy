@@ -230,10 +230,12 @@ class Percy
           begin
             block.call
           rescue => e
-            @error_logger.error(e.message)              
-            e.backtrace.each do |line|
-              @error_logger.error(line)
-            end
+              if @error_logger
+                @error_logger.error(e.message)              
+                e.backtrace.each do |line|
+                  @error_logger.error(line)
+                end
+              end
           end
         end
       end
@@ -245,9 +247,11 @@ class Percy
             begin
               method[:proc].call(env)
             rescue => e
-              @error_logger.error(e.message)              
-              e.backtrace.each do |line|
-                @error_logger.error(line)
+              if @error_logger
+                @error_logger.error(e.message)              
+                e.backtrace.each do |line|
+                  @error_logger.error(line)
+                end
               end
             end
           end
@@ -276,9 +280,11 @@ class Percy
             begin
               method[:proc].call(env)
             rescue => e
-              @error_logger.error(e.message)              
-              e.backtrace.each do |line|
-                @error_logger.error(line)
+              if @error_logger
+                @error_logger.error(e.message)              
+                e.backtrace.each do |line|
+                  @error_logger.error(line)
+                end
               end
             end
           end
@@ -291,9 +297,11 @@ class Percy
           begin
             block.call(env)
           rescue => e
-            @error_logger.error(e.message)              
-            e.backtrace.each do |line|
-              @error_logger.error(line)
+            if @error_logger
+              @error_logger.error(e.message)              
+              e.backtrace.each do |line|
+                @error_logger.error(line)
+              end
             end
           end
         end
@@ -305,9 +313,11 @@ class Percy
           begin
             block.call(env)
           rescue => e
-            @error_logger.error(e.message)              
-            e.backtrace.each do |line|
-              @error_logger.error(line)
+            if @error_logger
+              @error_logger.error(e.message)              
+              e.backtrace.each do |line|
+                @error_logger.error(line)
+              end
             end
           end
         end
@@ -319,9 +329,11 @@ class Percy
           begin
             block.call(env)
           rescue => e
-            @error_logger.error(e.message)              
-            e.backtrace.each do |line|
-              @error_logger.error(line)
+            if @error_logger
+              @error_logger.error(e.message)              
+              e.backtrace.each do |line|
+                @error_logger.error(line)
+              end
             end
           end
         end
@@ -333,9 +345,11 @@ class Percy
           begin
             block.call(env)
           rescue => e
-            @error_logger.error(e.message)              
-            e.backtrace.each do |line|
-              @error_logger.error(line)
+            if @error_logger
+              @error_logger.error(e.message)              
+              e.backtrace.each do |line|
+                @error_logger.error(line)
+              end
             end
           end
         end
@@ -347,9 +361,11 @@ class Percy
           begin
             block.call(env)
           rescue => e
-            @error_logger.error(e.message)              
-            e.backtrace.each do |line|
-              @error_logger.error(line)
+            if @error_logger
+              @error_logger.error(e.message)              
+              e.backtrace.each do |line|
+                @error_logger.error(line)
+              end
             end
           end
         end
@@ -420,8 +436,8 @@ class Percy
       @traffic_logger.info('-- Percy disconnected') if @traffic_logger
       puts "#{Time.now.strftime('%d.%m.%Y %H:%M:%S')} -- Percy disconnected"
     ensure
-      @traffic_logger.file.close
-      @error_logger.file.close
+      @traffic_logger.file.close if @traffic_logger
+      @error_logger.file.close if @error_logger
     end
   end
 end
