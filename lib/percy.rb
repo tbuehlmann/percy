@@ -406,7 +406,7 @@ class Percy
           when /^:(\S+)!(\S+)@(\S+) PRIVMSG (\S+) :/
             parse(:query, :nick => $1, :user => $2, :host => $3, :message => $')
           
-          when /^:(\S+)!(\S+)@(\S+) JOIN (\S+)$/
+          when /^:(\S+)!(\S+)@(\S+) JOIN :*(\S+)$/
             parse(:join, :nick => $1, :user => $2, :host => $3, :channel => $4)
           
           when /^:(\S+)!(\S+)@(\S+) PART (\S+)/
