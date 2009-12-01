@@ -402,6 +402,7 @@ class Percy
     
     @traffic_logger.info('-- Percy terminated') if @traffic_logger
     @traffic_logger.file.close
+    @error_logger.file.close
     puts "#{Time.now.strftime('%d.%m.%Y %H:%M:%S')} -- Percy terminated"
   end
 end
