@@ -24,7 +24,7 @@ class PercyLogger
       File.new(@filename, 'w+')
     end
     
-    @file = File.open(@filename, 'w+')
+    @file = File.open(@filename, 'a+')
     @file.sync = true
   end
   

@@ -378,6 +378,10 @@ class Percy
     end
   end
   
+  def nick
+    @config.nick
+  end
+  
   # connect!
   def connect
     begin
