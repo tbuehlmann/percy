@@ -36,11 +36,11 @@ No variables.
     end
 Variables:
 
-<tt>env[:nick]
-env[:user]
-env[:host]
-env[:channel]
-env[:message]</tt>
+> <tt>env[:nick]
+> env[:user]
+> env[:host]
+> env[:channel]
+> env[:message]</tt>
 
 ### Query message
     bot.on :query, /^bar!/ do |env|
@@ -48,10 +48,10 @@ env[:message]</tt>
     end
 Variables:
 
-<tt>env[:nick]
-env[:user]
-env[:host]
-env[:message]</tt>
+> <tt>env[:nick]
+> env[:user]
+> env[:host]
+> env[:message]</tt>
 
 ### Join
     bot.on :join do |env|
@@ -59,10 +59,10 @@ env[:message]</tt>
     end
 Variables:
 
-<tt>env[:nick]
-env[:user]
-env[:host]
-env[:channel]</tt>
+> <tt>env[:nick]
+> env[:user]
+> env[:host]
+> env[:channel]</tt>
 
 ### Part
     bot.on :part do |env|
@@ -70,11 +70,11 @@ env[:channel]</tt>
     end
 Variables:
 
-<tt>env[:nick]
-env[:user]
-env[:host]
-env[:channel]
-env[:message]</tt>
+> <tt>env[:nick]
+> env[:user]
+> env[:host]
+> env[:channel]
+> env[:message]</tt>
 
 ### Quit
     bot.on :quit do |env|
@@ -82,10 +82,10 @@ env[:message]</tt>
     end
 Variables:
 
-<tt>env[:nick]
-env[:user]
-env[:host]
-env[:message]</tt>
+> <tt>env[:nick]
+> env[:user]
+> env[:host]
+> env[:message]</tt>
 
 ### Nickchange
     bot.on :nickchange do |env|
@@ -93,10 +93,10 @@ env[:message]</tt>
     end
 Variables:
 
-<tt>env[:nick]
-env[:user]
-env[:host]
-env[:new_nick]</tt>
+> <tt>env[:nick]
+> env[:user]
+> env[:host]
+> env[:new_nick]</tt>
 
 ### Kick
     bot.on :kick do |env|
@@ -104,12 +104,12 @@ env[:new_nick]</tt>
     end
 Variables:
 
-<tt>env[:nick]
-env[:user]
-env[:host]
-env[:channel]
-env[:victim]
-env[:reason]</tt>
+> <tt>env[:nick]
+> env[:user]
+> env[:host]
+> env[:channel]
+> env[:victim]
+> env[:reason]</tt>
 
 ## Availabe Methods
 
