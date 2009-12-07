@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name = 'percy'
-  s.version = '0.0.4'
+  s.version = '0.0.5'
   s.summary = 'IRC bot framework (inspired by isaac)'
   s.description = 'Percy is an IRC bot framework inspired by isaac with various changes.'
   s.homepage = 'http://github.com/tbuehlmann/percy'

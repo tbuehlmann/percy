@@ -8,7 +8,7 @@ require 'thread'
 Thread.abort_on_exception = true
 
 class Percy
-  VERSION = 'Percy 0.0.4 (http://github.com/tbuehlmann/percy)'
+  VERSION = 'Percy 0.0.5 (http://github.com/tbuehlmann/percy)'
   
   Config = Struct.new(:server, :port, :password, :nick, :username, :verbose, :logging)
   
