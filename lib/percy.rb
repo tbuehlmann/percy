@@ -67,8 +67,8 @@ class Percy
     raw "MODE #{recipient} #{option}"
   end
   
-  # get the channellimit of a channel
-  def channellimit(channel)
+  # get the channel limit of a channel
+  def channel_limit(channel)
     add_observer
     raw "MODE #{channel}"
     
