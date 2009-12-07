@@ -76,8 +76,8 @@ class Percy
       Timeout::timeout(10) do # try 10 seconds to retrieve l mode of <channel>
         loop do
           @temp_socket.each do |line|
-            if line =~ /^:(\S+) 324 (\S+) #{channel} .*l.* (\d+)/
-              return $3.to_i
+            if line =~ /^:\S+ 324 \S+ #{channel} .*l.* (\d+)/
+              return $1.to_i
             end
           end
           sleep 0.5
@@ -99,8 +99,8 @@ class Percy
       Timeout::timeout(10) do
         loop do
           @temp_socket.each do |line|
-            if line =~ /^:(\S+) 311 (\S+) (#{nick}) /i
-              return $3
+            if line =~ /^:\S+ 311 \S+ (#{nick}) /i
+              return $1
             elsif line =~ /^:\S+ 401 \S+ #{nick} /i
               return false
             end
@@ -209,7 +209,7 @@ class Percy
       Timeout::timeout(10) do # try 10 seconds to retrieve the users of <channel>
         loop do
           @temp_socket.each do |line|
-            if line =~ /^:(\S+) 353 (\S+) = #{channel} :/
+            if line =~ /^:\S+ 353 \S+ = #{channel} :/
               return $'.split(' ')
             end
           end
@@ -403,13 +403,13 @@ class Percy
           when /^PING \S+$/
             raw line.chomp.gsub('PING', 'PONG')
           
-          when /^:(\S+) (376|422)/
+          when /^:\S+ 376|422/
             parse(:connect)
           
           when /^:(\S+)!(\S+)@(\S+) PRIVMSG #(\S+) :/
             parse(:channel, :nick => $1, :user => $2, :host => $3, :channel => "##{$4}", :message => $')
           
-          when /^:(\S+)!(\S+)@(\S+) PRIVMSG (\S+) :/
+          when /^:(\S+)!(\S+)@(\S+) PRIVMSG \S+ :/
             parse(:query, :nick => $1, :user => $2, :host => $3, :message => $')
           
           when /^:(\S+)!(\S+)@(\S+) JOIN :*(\S+)$/
