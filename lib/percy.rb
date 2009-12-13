@@ -8,7 +8,7 @@ require 'thread'
 Thread.abort_on_exception = true
 
 class Percy
-  VERSION = 'Percy 0.0.5 (http://github.com/tbuehlmann/percy)'
+  VERSION = 'Percy 0.0.6 (http://github.com/tbuehlmann/percy)'
   
   Config = Struct.new(:server, :port, :password, :nick, :username, :verbose, :logging)
   
@@ -67,6 +67,35 @@ class Percy
     raw "MODE #{recipient} #{option}"
   end
   
+  # returns all users on a specific channel
+  def users_on(channel)
+    add_observer
+    raw "NAMES #{channel}"
+    
+    begin
+      Timeout::timeout(10) do # try 10 seconds to retrieve the users of <channel>
+        start = 0
+        ending = @temp_socket.length
+        
+        loop do
+          for line in start..ending do
+            if @temp_socket[line] =~ /^:\S+ 353 \S+ = #{channel} :/
+              return $'.split(' ')
+            end
+          end
+          
+          sleep 0.25
+          start = ending
+          ending = @temp_socket.length
+        end
+      end
+    rescue Timeout::Error
+      return false
+    ensure
+      remove_observer
+    end
+  end
+  
   # get the channel limit of a channel
   def channel_limit(channel)
     add_observer
@@ -74,13 +103,19 @@ class Percy
     
     begin
       Timeout::timeout(10) do # try 10 seconds to retrieve l mode of <channel>
+        start = 0
+        ending = @temp_socket.length
+        
         loop do
-          @temp_socket.each do |line|
-            if line =~ /^:\S+ 324 \S+ #{channel} .*l.* (\d+)/
+          for line in start..ending do
+            if @temp_socket[line] =~ /^:\S+ 324 \S+ #{channel} .*l.* (\d+)/
               return $1.to_i
             end
           end
-          sleep 0.5
+          
+          sleep 0.25
+          start = ending
+          ending = @temp_socket.length
         end
       end
     rescue Timeout::Error
@@ -97,15 +132,21 @@ class Percy
     
     begin
       Timeout::timeout(10) do
+        start = 0
+        ending = @temp_socket.length
+        
         loop do
-          @temp_socket.each do |line|
-            if line =~ /^:\S+ 311 \S+ (#{nick}) /i
+          for line in start..ending do
+            if @temp_socket[line] =~ /^:\S+ 311 \S+ (#{nick}) /i
               return $1
             elsif line =~ /^:\S+ 401 \S+ #{nick} /i
               return false
             end
           end
-          sleep 0.5
+          
+          sleep 0.25
+          start = ending
+          ending = @temp_socket.length
         end
       end
     rescue Timeout::Error
@@ -200,29 +241,6 @@ class Percy
     end
   end
   
-  # returns all users on a specific channel
-  def users_on(channel)
-    add_observer
-    raw "NAMES #{channel}"
-    
-    begin
-      Timeout::timeout(10) do # try 10 seconds to retrieve the users of <channel>
-        loop do
-          @temp_socket.each do |line|
-            if line =~ /^:\S+ 353 \S+ = #{channel} :/
-              return $'.split(' ')
-            end
-          end
-          sleep 0.5
-        end
-      end
-    rescue Timeout::Error
-      return false
-    ensure
-      remove_observer
-    end
-  end
-  
   # parses incoming traffic
   def parse(type, env = nil)
     case type
@@ -236,7 +254,7 @@ class Percy
             end
           rescue => e
               if @error_logger
-                @error_logger.error(e.message)              
+                @error_logger.error(e.message)
                 e.backtrace.each do |line|
                   @error_logger.error(line)
                 end
@@ -253,7 +271,7 @@ class Percy
               method[:proc].call(env)
             rescue => e
               if @error_logger
-                @error_logger.error(e.message)              
+                @error_logger.error(e.message)
                 e.backtrace.each do |line|
                   @error_logger.error(line)
                 end
@@ -286,7 +304,7 @@ class Percy
               method[:proc].call(env)
             rescue => e
               if @error_logger
-                @error_logger.error(e.message)              
+                @error_logger.error(e.message)
                 e.backtrace.each do |line|
                   @error_logger.error(line)
                 end
@@ -303,7 +321,7 @@ class Percy
             block.call(env)
           rescue => e
             if @error_logger
-              @error_logger.error(e.message)              
+              @error_logger.error(e.message)
               e.backtrace.each do |line|
                 @error_logger.error(line)
               end
@@ -319,7 +337,7 @@ class Percy
             block.call(env)
           rescue => e
             if @error_logger
-              @error_logger.error(e.message)              
+              @error_logger.error(e.message)
               e.backtrace.each do |line|
                 @error_logger.error(line)
               end
@@ -335,7 +353,7 @@ class Percy
             block.call(env)
           rescue => e
             if @error_logger
-              @error_logger.error(e.message)              
+              @error_logger.error(e.message)
               e.backtrace.each do |line|
                 @error_logger.error(line)
               end
@@ -351,7 +369,7 @@ class Percy
             block.call(env)
           rescue => e
             if @error_logger
-              @error_logger.error(e.message)              
+              @error_logger.error(e.message)
               e.backtrace.each do |line|
                 @error_logger.error(line)
               end
@@ -367,7 +385,7 @@ class Percy
             block.call(env)
           rescue => e
             if @error_logger
-              @error_logger.error(e.message)              
+              @error_logger.error(e.message)
               e.backtrace.each do |line|
                 @error_logger.error(line)
               end
@@ -438,7 +456,7 @@ class Percy
         @connected = false
       end
     rescue => e
-      @error_logger.error(e.message)              
+      @error_logger.error(e.message)
       e.backtrace.each do |line|
         @error_logger.error(line)
       end

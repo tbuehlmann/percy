@@ -1,4 +1,4 @@
-# Percy 0.0.5
+# Percy 0.0.6
 
 ## Configuring and starting the bot
 
