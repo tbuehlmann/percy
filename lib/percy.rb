@@ -42,7 +42,7 @@ class Percy
     attr_accessor :traffic_logger, :connected
   end
   
-  VERSION = 'Percy 1.0.0 (http://github.com/tbuehlmann/percy)'
+  VERSION = 'Percy 1.1.0 (http://github.com/tbuehlmann/percy)'
   
   Config = Struct.new(:server, :port, :password, :nick, :username, :verbose, :logging, :reconnect, :reconnect_interval)
   
@@ -55,14 +55,8 @@ class Percy
   @connected = false
   
   # user methods
-  @on_channel    = []
-  @on_query      = []
-  @on_connect    = []
-  @on_join       = []
-  @on_part       = []
-  @on_quit       = []
-  @on_nickchange = []
-  @on_kick       = []
+  @events = Hash.new []
+  @listened_types = [:connect, :channel, :query, :join, :part, :quit, :nickchange, :kick] # + 3-digit numbers
   
   # observer synchronizer
   @mutex_observer = Mutex.new
@@ -240,23 +234,16 @@ class Percy
   
   # on method
   def self.on(type = :channel, match = //, &block)
+    unless @listened_types.include?(type) || type =~ /^\d\d\d$/
+      raise ArgumentError, "#{type} is not a supported type"
+    end
+    
+    @events[type] = [] if @events[type].empty?
     case type
-      when :channel
-        @on_channel << {:match => match, :proc => block}
-      when :connect
-        @on_connect << block
-      when :query
-        @on_query << {:match => match, :proc => block}
-      when :join
-        @on_join << block
-      when :part
-        @on_part << block
-      when :quit
-        @on_quit << block
-      when :nickchange
-        @on_nickchange << block
-      when :kick
-        @on_kick << block
+    when :channel || :query
+      @events[type] << {:match => match, :proc => block}
+    else
+      @events[type] << block
     end
   end
   
@@ -278,27 +265,46 @@ class Percy
   # parses incoming traffic (types)
   def self.parse_type(type, env = nil)
     case type
-    when :connect
-      @on_connect.each do |block|
-        Thread.new do
-          begin
-            unless @connected
-              @connected = true
-              block.call
-            end
-          rescue => e
+    when /^\d\d\d$/
+      if @events[type]
+        @events[type].each do |block|
+          Thread.new do
+            begin
+              block.call(env)
+            rescue => e
               if @error_logger
                 @error_logger.error(e.message)
                 e.backtrace.each do |line|
                   @error_logger.error(line)
                 end
               end
+            end
+          end
+        end
+      end
+      # :connect
+      if type =~ /^376|422$/
+        @events[:connect].each do |block|
+          Thread.new do
+            begin
+              unless @connected
+                @connected = true
+                block.call
+              end
+            rescue => e
+              if @error_logger
+                @error_logger.error(e.message)
+                e.backtrace.each do |line|
+                  @error_logger.error(line)
+                end
+              end
+            end
           end
         end
       end
     
     when :channel
-      @on_channel.each do |method|
+      @events[type].each do |method|
         if env[:message] =~ method[:match]
           Thread.new do
             begin
@@ -331,7 +337,7 @@ class Percy
         self.notice env[:nick], "\001PING #{$1}\001"
       end
       
-      @on_query.each do |method|
+      @events[type].each do |method|
         if env[:message] =~ method[:match]
           Thread.new do
             begin
@@ -349,7 +355,7 @@ class Percy
       end
     
     when :join
-      @on_join.each do |block|
+      @events[type].each do |block|
         Thread.new do
           begin
             block.call(env)
@@ -365,7 +371,7 @@ class Percy
       end
     
     when :part
-      @on_part.each do |block|
+      @events[type].each do |block|
         Thread.new do
           begin
             block.call(env)
@@ -381,7 +387,7 @@ class Percy
       end
     
     when :quit
-      @on_quit.each do |block|
+      @events[type].each do |block|
         Thread.new do
           begin
             block.call(env)
@@ -397,7 +403,7 @@ class Percy
       end
     
     when :nickchange
-      @on_nickchange.each do |block|
+      @events[type].each do |block|
         Thread.new do
           begin
             block.call(env)
@@ -413,7 +419,7 @@ class Percy
       end
     
     when :kick
-      @on_kick.each do |block|
+      @events[type].each do |block|
         Thread.new do
           begin
             block.call(env)
@@ -449,8 +455,8 @@ class Percy
     when /^PING \S+$/
       self.raw message.chomp.gsub('PING', 'PONG')
     
-    when /^:\S+ 376|422/
-      self.parse_type(:connect)
+    when /^:\S+ (\d\d\d) /
+      self.parse_type($1, :params => $')
     
     when /^:(\S+)!(\S+)@(\S+) PRIVMSG #(\S+) :/
       self.parse_type(:channel, :nick => $1, :user => $2, :host => $3, :channel => "##{$4}", :message => $')

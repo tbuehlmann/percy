@@ -1,4 +1,4 @@
-# Percy 1.0.0
+# Percy 1.1.0
 
 ## Configuring and starting the bot
 
@@ -112,6 +112,14 @@ env[:host]<br />
 env[:channel]<br />
 env[:victim]<br />
 env[:reason]</tt>
+
+### Raw Numerics
+    Percy.on '301' do |env|
+      # ...
+    end
+Variables:
+
+<tt>env[:params]</tt>
 
 ## Availabe Class Methods
 
