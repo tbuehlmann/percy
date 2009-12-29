@@ -72,7 +72,7 @@ class Percy
   # raw IRC messages
   def self.raw(message)
     @connection.send_data "#{message}\r\n"
-    @traffic_logger.info(">> #{message}") if @traffic_logg
+    @traffic_logger.info(">> #{message}") if @traffic_logger
     puts "#{Time.now.strftime('%d.%m.%Y %H:%M:%S')} >> #{message}" if @config.verbose
   end
   
@@ -238,7 +238,7 @@ class Percy
       raise ArgumentError, "#{type} is not a supported type"
     end
     
-    @events[type] = [] if @events[type].empty?
+    @events[type] = [] if @events[type].empty? # @events' default value is [], but it's not possible to add elements to it (weird!)
     case type
     when :channel || :query
       @events[type] << {:match => match, :proc => block}
