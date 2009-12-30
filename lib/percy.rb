@@ -145,17 +145,17 @@ class Percy
   
   # returns all users on a specific channel
   def self.users_on(channel)
-    self.add_observer
+    actual_length = self.add_observer
     self.raw "NAMES #{channel}"
     
     begin
       Timeout::timeout(10) do # try 10 seconds to retrieve the users of <channel>
-        start = 0
+        start = actual_length
         ending = @temp_socket.length
         
         loop do
           for line in start..ending do
-            if @temp_socket[line] =~ /^:\S+ 353 \S+ = #{channel} :/
+            if @temp_socket[line] =~ /^:\S+ 353 \S+ = #{Regexp.escape(channel)} :/
               return $'.split(' ')
             end
           end
@@ -174,17 +174,17 @@ class Percy
   
   # get the channel limit of a channel
   def self.channel_limit(channel)
-    self.add_observer
+    actual_length = self.add_observer
     self.raw "MODE #{channel}"
     
     begin
       Timeout::timeout(10) do # try 10 seconds to retrieve l mode of <channel>
-        start = 0
+        start = actual_length
         ending = @temp_socket.length
         
         loop do
           for line in start..ending do
-            if @temp_socket[line] =~ /^:\S+ 324 \S+ #{channel} .*l.* (\d+)/
+            if @temp_socket[line] =~ /^:\S+ 324 \S+ #{Regexp.escape(channel)} .*l.* (\d+)/
               return $1.to_i
             end
           end
@@ -203,19 +203,19 @@ class Percy
   
   # check whether an user is online
   def self.is_online(nick)
-    self.add_observer
+    actual_length = self.add_observer
     self.raw "WHOIS #{nick}"
     
     begin
       Timeout::timeout(10) do
-        start = 0
+        start = actual_length
         ending = @temp_socket.length
         
         loop do
           for line in start..ending do
-            if @temp_socket[line] =~ /^:\S+ 311 \S+ (#{nick}) /i
+            if @temp_socket[line] =~ /^:\S+ 311 \S+ (#{Regexp.escape(nick)}) /i
               return $1
-            elsif line =~ /^:\S+ 401 \S+ #{nick} /i
+            elsif line =~ /^:\S+ 401 \S+ #{Regexp.escape(nick)} /i
               return false
             end
           end
@@ -252,6 +252,8 @@ class Percy
     @mutex_observer.synchronize do
       @observers += 1
     end
+    
+    return @temp_socket.length # so the loop knows where to begin to search for patterns
   end
   
   # remove observer
