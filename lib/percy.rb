@@ -253,7 +253,7 @@ class Percy
       @observers += 1
     end
     
-    return @temp_socket.length # so the loop knows where to begin to search for patterns
+    return @temp_socket.length - 1 # so the loop knows where to begin to search for patterns
   end
   
   # remove observer
