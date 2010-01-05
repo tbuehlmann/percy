@@ -42,7 +42,7 @@ class Percy
     attr_accessor :traffic_logger, :connected
   end
   
-  VERSION = 'Percy 1.1.1 (http://github.com/tbuehlmann/percy)'
+  VERSION = 'Percy 1.2.0 (http://github.com/tbuehlmann/percy)'
   
   Config = Struct.new(:server, :port, :password, :nick, :username, :verbose, :logging, :reconnect, :reconnect_interval)
   

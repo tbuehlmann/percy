@@ -1,4 +1,4 @@
-# Percy 1.1.1
+# Percy 1.2.0
 
 ## Configuring and starting the bot
 

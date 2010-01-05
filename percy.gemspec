@@ -1,10 +1,10 @@
 Gem::Specification.new do |s|
   s.name = 'percy'
-  s.version = '1.1.1'
+  s.version = '1.2.0'
   s.summary = '(DSL, EventMachine) IRC Bot Framework inspired by isaac'
   s.description = 'Percy is an IRC bot framework inspired by isaac with various changes.'
   s.homepage = 'http://github.com/tbuehlmann/percy'
-  s.date = '29.12.2009'
+  s.date = '05.01.2010'
   
   s.author = 'Tobias Bühlmann'
   s.email = 'tobias.buehlmann@gmx.de'
