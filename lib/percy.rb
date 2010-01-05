@@ -143,20 +143,25 @@ class Percy
     @config.nick
   end
   
-  # returns all users on a specific channel
+  # returns all users on a specific channel as array: ['Foo', 'bar', 'The_Librarian']
   def self.users_on(channel)
     actual_length = self.add_observer
     self.raw "NAMES #{channel}"
+    channel = Regexp.escape(channel)
     
     begin
-      Timeout::timeout(10) do # try 10 seconds to retrieve the users of <channel>
+      Timeout::timeout(30) do # try 30 seconds to retrieve the users of <channel>
         start = actual_length
         ending = @temp_socket.length
+        users = []
         
         loop do
           for line in start..ending do
-            if @temp_socket[line] =~ /^:\S+ 353 \S+ = #{Regexp.escape(channel)} :/
-              return $'.split(' ')
+            case @temp_socket[line]
+            when /^:\S+ 353 .+ #{channel} :/i
+              users << $'.split(' ')
+            when /^:\S+ 366 .+ #{channel}/i
+              return users.flatten.uniq.map { |element| element.gsub(/[!@%+]/, '') } # removing all modes
             end
           end
           
@@ -166,7 +171,41 @@ class Percy
         end
       end
     rescue Timeout::Error
-      return false
+      return []
+    ensure
+      self.remove_observer
+    end
+  end
+  
+  # returns all users on a specific channel as array (with status): ['@Foo', '+bar', 'The_Librarian', '!Frank']
+  def self.users_with_status_on(channel)
+    actual_length = self.add_observer
+    self.raw "NAMES #{channel}"
+    channel = Regexp.escape(channel)
+    
+    begin
+      Timeout::timeout(30) do # try 30 seconds to retrieve the users of <channel>
+        start = actual_length
+        ending = @temp_socket.length
+        users = []
+        
+        loop do
+          for line in start..ending do
+            case @temp_socket[line]
+            when /^:\S+ 353 .+ #{channel} :/i
+              users << $'.split(' ')
+            when /^:\S+ 366 .+ #{channel}/i
+              return users.flatten.uniq
+            end
+          end
+          
+          sleep 0.25
+          start = ending
+          ending = @temp_socket.length
+        end
+      end
+    rescue Timeout::Error
+      return []
     ensure
       self.remove_observer
     end
