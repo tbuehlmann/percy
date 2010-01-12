@@ -254,7 +254,7 @@ class Percy
           for line in start..ending do
             if @temp_socket[line] =~ /^:\S+ 311 \S+ (#{Regexp.escape(nick)}) /i
               return $1
-            elsif line =~ /^:\S+ 401 \S+ #{Regexp.escape(nick)} /i
+            elsif @temp_socket[line] =~ /^:\S+ 401 \S+ #{Regexp.escape(nick)} /i
               return false
             end
           end
