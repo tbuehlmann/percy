@@ -220,10 +220,11 @@ class Percy
       Timeout::timeout(10) do # try 10 seconds to retrieve l mode of <channel>
         start = actual_length
         ending = @temp_socket.length
+        channel = Regexp.escape(channel)
         
         loop do
           for line in start..ending do
-            if @temp_socket[line] =~ /^:\S+ 324 \S+ #{Regexp.escape(channel)} .*l.* (\d+)/
+            if @temp_socket[line] =~ /^:\S+ 324 \S+ #{channel} .*l.* (\d+)/
               return $1.to_i
             end
           end
@@ -249,12 +250,13 @@ class Percy
       Timeout::timeout(10) do
         start = actual_length
         ending = @temp_socket.length
+        nick = Regexp.escape(nick)
         
         loop do
           for line in start..ending do
-            if @temp_socket[line] =~ /^:\S+ 311 \S+ (#{Regexp.escape(nick)}) /i
+            if @temp_socket[line] =~ /^:\S+ 311 \S+ (#{nick}) /i
               return $1
-            elsif @temp_socket[line] =~ /^:\S+ 401 \S+ #{Regexp.escape(nick)} /i
+            elsif @temp_socket[line] =~ /^:\S+ 401 \S+ #{nick} /i
               return false
             end
           end
