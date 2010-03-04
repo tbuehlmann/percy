@@ -1,6 +1,3 @@
-$:.unshift "#{File.expand_path(File.dirname(__FILE__))}/lib"
-PERCY_ROOT = File.expand_path(File.dirname(__FILE__))
-
 require 'rubygems'
 require 'percy'
 
@@ -24,11 +21,11 @@ end
 Percy.on :channel, /^online\?/ do |env|
   match = env[:message].split(' ')
   if match.length > 1
-    nick = Percy.is_online(match[1])
-    if nick
-      Percy.message env[:channel], "#{nick} is online!"
+    user = Percy.is_online(match[1])
+    if user
+      Percy.message env[:channel], "#{user} is online!"
     else
-      Percy.message env[:channel], "#{nick} is not online!"
+      Percy.message env[:channel], "#{user} is not online!"
     end
   end
 end

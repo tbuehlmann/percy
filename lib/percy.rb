@@ -1,10 +1,11 @@
-$:.unshift File.expand_path(File.dirname(__FILE__))
-
 require 'rubygems'
+require 'pathname'
+$:.unshift Pathname.new(__FILE__).dirname.expand_path
 require 'eventmachine'
-require 'percylogger'
+require 'ostruct'
 require 'timeout'
 require 'thread'
+autoload :PercyLogger, 'percylogger'
 
 Thread.abort_on_exception = true
 
@@ -21,6 +22,7 @@ class Connection < EventMachine::Connection
     Percy.connected = false
     Percy.traffic_logger.info('-- Percy disconnected') if Percy.traffic_logger
     puts "#{Time.now.strftime('%d.%m.%Y %H:%M:%S')} -- Percy disconnected"
+    
     if Percy.config.reconnect
       Percy.traffic_logger.info("-- Reconnecting in #{Percy.config.reconnect_interval} seconds") if Percy.traffic_logger
       puts "#{Time.now.strftime('%d.%m.%Y %H:%M:%S')} -- Reconnecting in #{Percy.config.reconnect_interval} seconds"
@@ -28,6 +30,8 @@ class Connection < EventMachine::Connection
       EventMachine::add_timer(Percy.config.reconnect_interval) do
         reconnect Percy.config.server, Percy.config.port
       end
+    else
+      EventMachine::stop_event_loop
     end
   end
   
@@ -42,11 +46,16 @@ class Percy
     attr_accessor :traffic_logger, :connected
   end
   
-  VERSION = 'Percy 1.2.1 (http://github.com/tbuehlmann/percy)'
+  VERSION = 'Percy 1.3.0 (http://github.com/tbuehlmann/percy)'
   
-  Config = Struct.new(:server, :port, :password, :nick, :username, :verbose, :logging, :reconnect, :reconnect_interval)
-  
-  @config = Config.new("localhost", 6667, nil, 'Percy', 'Percy', true, false, false, 30)
+  @config = OpenStruct.new({:server             => 'localhost',
+                            :port               => 6667,
+                            :nick               => 'Percy',
+                            :username           => 'Percy',
+                            :verbose            => true,
+                            :logging            => false,
+                            :reconnect          => true,
+                            :reconnect_interval => 30})
   
   # helper variables for getting server return values
   @observers = 0
@@ -64,9 +73,14 @@ class Percy
   def self.configure(&block)
     block.call(@config)
     
+    # set the percy root directory
+    Object::const_set(:PERCY_ROOT, Pathname.new($0).dirname.expand_path)
+    
     # logger
-    @traffic_logger = PercyLogger.new("#{PERCY_ROOT}/logs/traffic.log") if @config.logging
-    @error_logger = PercyLogger.new("#{PERCY_ROOT}/logs/error.log") if @config.logging
+    if @config.logging
+      @traffic_logger = PercyLogger.new(Pathname.new(PERCY_ROOT).join('logs'), 'traffic.log')
+      @error_logger   = PercyLogger.new(Pathname.new(PERCY_ROOT).join('logs'), 'error.log')
+    end
   end
   
   # raw IRC messages
@@ -288,6 +302,18 @@ class Percy
     end
   end
   
+  # connect!
+  def self.connect
+    @traffic_logger.info('-- Starting Percy') if @traffic_logger
+    puts "#{Time.now.strftime('%d.%m.%Y %H:%M:%S')} -- Starting Percy"
+    
+    EventMachine::run do
+      @connection = EventMachine::connect(@config.server, @config.port, Connection)
+    end
+  end
+  
+  private
+  
   # add observer
   def self.add_observer
     @mutex_observer.synchronize do
@@ -325,6 +351,7 @@ class Percy
           end
         end
       end
+      
       # :connect
       if type =~ /^376|422$/
         @events[:connect].each do |block|
@@ -479,16 +506,6 @@ class Percy
     end
   end
   
-  # connect!
-  def self.connect
-    @traffic_logger.info('-- Starting Percy') if @traffic_logger
-    puts "#{Time.now.strftime('%d.%m.%Y %H:%M:%S')} -- Starting Percy"
-    
-    EventMachine::run do
-      @connection = EventMachine::connect(@config.server, @config.port, Connection)
-    end
-  end
-  
   # parsing incoming traffic
   def self.parse(message)
     @traffic_logger.info("<< #{message.chomp}") if @traffic_logger
@@ -528,3 +545,16 @@ class Percy
     end
   end
 end
+
+def delegate(*methods)
+  methods.each do |method|
+   eval <<-EOS
+      def #{method}(*args, &block)
+        Percy.send(#{method.inspect}, *args, &block)
+      end
+    EOS
+  end
+end
+
+delegate :action, :channel_limit, :configure, :connect, :is_online, :join, :kick, :message,
+         :mode, :nick, :notice, :on, :part, :quit, :raw, :topic, :users_on, :users_with_status_on

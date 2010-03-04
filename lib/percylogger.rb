@@ -1,5 +1,7 @@
 class PercyLogger
+  require 'pathname'
   require 'thread'
+  autoload :FileUtils, 'fileutils'
   
   DEBUG   = 0
   INFO    = 1
@@ -11,20 +13,22 @@ class PercyLogger
   
   attr_accessor :level, :time_format, :file
   
-  def initialize(filename = 'log.log', level = DEBUG, time_format = '%d.%m.%Y %H:%M:%S')
-    @filename = filename
+  def initialize(dirpath = Pathname.new($0).dirname.expand_path.join('logs'), filename = 'log.log', level = DEBUG, time_format = '%d.%m.%Y %H:%M:%S')
+    @dirpath = dirpath
+    @pathname = dirpath.join(filename)
     @level = level
     @time_format = time_format
     @mutex = Mutex.new
     
-    unless File.exist?(@filename)
-      unless File.directory?(File.dirname(@filename))
-        Dir.mkdir(File.dirname(@filename))
+    unless @pathname.exist?
+      unless @dirpath.directory?
+        FileUtils.mkdir_p @dirpath
       end
-      File.new(@filename, 'w+')
+      
+      File.new(@pathname, 'w+')
     end
     
-    @file = File.open(@filename, 'a+')
+    @file = File.open(@pathname, 'a+')
     @file.sync = true
   end
   

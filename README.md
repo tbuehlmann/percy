@@ -1,11 +1,10 @@
-# Percy 1.2.1
+# Percy 1.3.0
+
+- You can now call all the class methods without `Percy.` in front.
 
 ## Configuring and starting the bot
 
 ### mybot.rb
-    $:.unshift "#{File.expand_path(File.dirname(__FILE__))}/lib"
-    PERCY_ROOT = File.expand_path(File.dirname(__FILE__))
-
     require 'rubygems'
     require 'percy'
     
@@ -177,7 +176,7 @@ Returns an array of users from a channel (mode in front like: ['@percy', 'Peter_
 Returns a nickname as string if online, else false (not online/timeout)
 
 ## License
-Copyright (c) 2009 Tobias Bühlmann
+Copyright (c) 2009, 2010 Tobias Bühlmann
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
