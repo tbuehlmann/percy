@@ -14,7 +14,7 @@ configure do |c|
 end
 
 on :connect do
-  join 'that_cool_channel'
+  join '#that_cool_channel'
 end
 
 on :channel, /^!quit$/ do
