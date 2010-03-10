@@ -3,6 +3,7 @@ require 'nokogiri'
 require 'open-uri'
 require 'percy'
 
+# abbreviated notation without Percy::IRC
 configure do |c|
   c.server    = 'chat.eu.freenode.net'
   c.port      = 6667
@@ -13,14 +14,14 @@ configure do |c|
 end
 
 on :connect do
-  join '#that_cool_channel'
+  join 'that_cool_channel'
 end
 
 on :channel, /^!quit$/ do
   quit
 end
 
-on :channel, /^blog?$/ do |env|
+on :channel, /^blog\?$/ do |env|
   doc = Nokogiri::HTML(open('http://github.com/blog'))
   title = doc.xpath('//html/body/div/div[2]/div/div/ul/li/h2/a')[0].text
   

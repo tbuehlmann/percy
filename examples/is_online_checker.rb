@@ -1,7 +1,7 @@
 require 'rubygems'
 require 'percy'
 
-Percy.configure do |c|
+Percy::IRC.configure do |c|
   c.server    = 'chat.eu.freenode.net'
   c.port      = 6667
   c.nick      = 'Percy_onlchk'
@@ -10,24 +10,24 @@ Percy.configure do |c|
   c.reconnect = false
 end
 
-Percy.on :connect do
-  Percy.join '#that_cool_channel'
+Percy::IRC.on :connect do
+  Percy::IRC.join '#that_cool_channel'
 end
 
-Percy.on :channel, /^!quit$/ do
-  Percy.quit
+Percy::IRC.on :channel, /^!quit$/ do
+  Percy::IRC.quit
 end
 
-Percy.on :channel, /^online\?/ do |env|
+Percy::IRC.on :channel, /^online\?/ do |env|
   match = env[:message].split(' ')
   if match.length > 1
-    user = Percy.is_online(match[1])
+    user = Percy::IRC.is_online(match[1])
     if user
-      Percy.message env[:channel], "#{user} is online!"
+      Percy::IRC.message env[:channel], "#{user} is online!"
     else
-      Percy.message env[:channel], "#{user} is not online!"
+      Percy::IRC.message env[:channel], "#{user} is not online!"
     end
   end
 end
 
-Percy.connect
+Percy::IRC.connect

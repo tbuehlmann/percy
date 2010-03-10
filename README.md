@@ -1,6 +1,4 @@
-# Percy 1.3.0
-
-- You can now call all the class methods without `Percy.` in front.
+# Percy 1.4.0
 
 ## Configuring and starting the bot
 
@@ -8,7 +6,7 @@
     require 'rubygems'
     require 'percy'
     
-    Percy.configure do |c|
+    configure do |c|
       c.server             = 'chat.eu.freenode.net'
       c.port               = 6667
       # c.password         = 'password'
@@ -20,19 +18,22 @@
       c.reconnect_interval = 30
     end
     
-    Percy.connect
+    connect
 
 Start it with `ruby mybot.rb`.
 
 ## Handling Events
+
+- You can also call all methods with `Percy::IRC`, like `Percy::IRC.join('#that_cool_channel')`.
+
 ### Connect
-    Percy.on :connect do
+    on :connect do
       # ...
     end
 No variables.
 
 ### Channel message
-    Percy.on :channel, /^foo!/ do |env|
+    on :channel, /^foo!/ do |env|
       # ...
     end
 Variables:
@@ -44,7 +45,7 @@ env[:channel]<br />
 env[:message]</tt>
 
 ### Query message
-    Percy.on :query, /^bar!/ do |env|
+    on :query, /^bar!/ do |env|
       # ...
     end
 Variables:
@@ -55,7 +56,7 @@ env[:host]<br />
 env[:message]</tt>
 
 ### Join
-    Percy.on :join do |env|
+    on :join do |env|
       # ...
     end
 Variables:
@@ -66,7 +67,7 @@ env[:host]<br />
 env[:channel]</tt>
 
 ### Part
-    Percy.on :part do |env|
+    on :part do |env|
       # ...
     end
 Variables:
@@ -78,7 +79,7 @@ env[:channel]<br />
 env[:message]</tt>
 
 ### Quit
-    Percy.on :quit do |env|
+    on :quit do |env|
       # ...
     end
 Variables:
@@ -89,7 +90,7 @@ env[:host]<br />
 env[:message]</tt>
 
 ### Nickchange
-    Percy.on :nickchange do |env|
+    on :nickchange do |env|
       # ...
     end
 Variables:
@@ -100,7 +101,7 @@ env[:host]<br />
 env[:new_nick]</tt>
 
 ### Kick
-    Percy.on :kick do |env|
+    on :kick do |env|
       # ...
     end
 Variables:
@@ -113,7 +114,7 @@ env[:victim]<br />
 env[:reason]</tt>
 
 ### Raw Numerics
-    Percy.on '301' do |env|
+    on '301' do |env|
       # ...
     end
 Variables:
@@ -122,58 +123,96 @@ Variables:
 
 ## Availabe Class Methods
 
-`Percy.raw(msg)`
+`raw(msg)`
 
 Sends a raw message to the server.
 
-`Percy.message(recipient, msg)`
+`message(recipient, msg)`
 
 Sends a message to a channel or an user.
 
-`Percy.notice(recipient, msg)`
+`notice(recipient, msg)`
 
 Sends a notice to an user.
 
-`Percy.action(recipient, msg)`
+`action(recipient, msg)`
 
 Performs an action (/me ...).
 
-`Percy.mode(recipient, option)`
+`mode(recipient, option)`
 
 Sets a mode for a channel or an user.
 
-`Percy.channellimit(channel)`
+`channellimit(channel)`
 
 Returns the channel limit of a channel (as integer if set, else (not set/timeout) false).
 
-`Percy.kick(channel, user, reason)`
+`kick(channel, user, reason)`
 
 Kicks an user from a channel with a specific reason.
 
-`Percy.topic(channel, topic)`
+`topic(channel, topic)`
 
 Sets the topic for a channel.
 
-`Percy.join(channel, password = nil)`
+`join(channel, password = nil)`
 
 Joins a channel.
 
-`Percy.part(channel, msg)`
+`part(channel, msg)`
 
 Parts a channel with a message.
 
-`Percy.quit(msg = nil)`
+`quit(msg = nil)`
 
 Quits from the server with a message.
 
-`Percy.users_on(channel)`
+`users_on(channel)`
 
 Returns an array of users from a channel (mode in front like: ['@percy', 'Peter_Parker', '+The_Librarian']) or false if timeout.
 
-
-`Percy.is_online(nick)`
+`is_online(nick)`
 
 Returns a nickname as string if online, else false (not online/timeout)
+
+## Formatting
+
+There are constants for formatting your messages. They are all availabe through `Percy::Formatting` or by including the module.
+
+Availabe formatting constants:
+
+`PLAIN`
+`BOLD`
+`ITALIC`
+`UNDERLINE`
+`COLOR_CODE`
+`UNCOLOR`
+`COLORS`
+
+Availabe colors through the `COLORS` hash:
+
+`:white`
+`:black`
+`:blue`
+`:green`
+`:red`
+`:brown`
+`:purple`
+`:orange`
+`:yellow`
+`:lime`
+`:teal`
+`:cyan`
+`:royal`
+`:pink`
+`:gray`
+`:silver`
+
+### Example:
+    message '#that_cool_channel', "#{Percy::Formatting::COLOR_CODE}#{Percy::Formatting::COLORS[:red]}This is red text.#{Percy::Formatting::UNCOLOR} This is not."
+
+### Example with included Percy::Formatting module:
+    message '#that_cool_channel', "#{COLOR_CODE}#{COLORS[:red]}This is red text.#{UNCOLOR} This is not."
 
 ## License
 Copyright (c) 2009, 2010 Tobias Bühlmann
