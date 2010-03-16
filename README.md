@@ -1,5 +1,8 @@
 # Percy 1.4.0
 
+## Installing Percy
+`sudo gem install percy`
+
 ## Configuring and starting the bot
 
 ### mybot.rb
@@ -24,7 +27,7 @@ Start it with `ruby mybot.rb`.
 
 ## Handling Events
 
-- You can also call all methods with `Percy::IRC`, like `Percy::IRC.join('#that_cool_channel')`.
+You can also call all methods with `Percy::IRC`, like `Percy::IRC.join('#that_cool_channel')`.
 
 ### Connect
     on :connect do
@@ -181,38 +184,40 @@ There are constants for formatting your messages. They are all availabe through 
 
 Availabe formatting constants:
 
-`PLAIN`
-`BOLD`
-`ITALIC`
-`UNDERLINE`
-`COLOR_CODE`
-`UNCOLOR`
+`PLAIN`  
+`BOLD`  
+`ITALIC`  
+`UNDERLINE`  
+`COLOR_CODE`  
+`UNCOLOR`  
 `COLORS`
 
 Availabe colors through the `COLORS` hash:
 
-`:white`
-`:black`
-`:blue`
-`:green`
-`:red`
-`:brown`
-`:purple`
-`:orange`
-`:yellow`
-`:lime`
-`:teal`
-`:cyan`
-`:royal`
-`:pink`
-`:gray`
+`:white`  
+`:black`  
+`:blue`  
+`:green`  
+`:red`  
+`:brown`  
+`:purple`  
+`:orange`  
+`:yellow`  
+`:lime`  
+`:teal`  
+`:cyan`  
+`:royal`  
+`:pink`  
+`:gray`  
 `:silver`
 
 ### Example:
-    message '#that_cool_channel', "#{Percy::Formatting::COLOR_CODE}#{Percy::Formatting::COLORS[:red]}This is red text.#{Percy::Formatting::UNCOLOR} This is not."
+    message '#that_cool_channel',
+            "#{Percy::Formatting::COLOR_CODE}#{Percy::Formatting::COLORS[:red]}This is red text.#{Percy::Formatting::UNCOLOR} This is not."
 
 ### Example with included Percy::Formatting module:
-    message '#that_cool_channel', "#{COLOR_CODE}#{COLORS[:red]}This is red text.#{UNCOLOR} This is not."
+    message '#that_cool_channel',
+            "#{COLOR_CODE}#{COLORS[:red]}This is red text.#{UNCOLOR} This is not."
 
 ## License
 Copyright (c) 2009, 2010 Tobias Bühlmann
