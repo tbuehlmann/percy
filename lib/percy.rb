@@ -5,7 +5,7 @@ require 'percy/formatting'
 Thread.abort_on_exception = true
 
 module Percy
-  VERSION = 'Percy 1.4.1 (http://github.com/tbuehlmann/percy)'
+  VERSION = 'Percy 1.4.2 (http://github.com/tbuehlmann/percy)'
   
   # set the percy root directory
   Object::const_set(:PERCY_ROOT, Pathname.new($0).dirname.expand_path)
