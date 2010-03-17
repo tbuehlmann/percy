@@ -136,7 +136,7 @@ env[:params]</tt>
 You can gather types:
 
     on [:channel, :query], /foo/ do |env|
-      message (env[:channel] || env[:nick]), 'bar!'
+      message((env[:channel] || env[:nick]), 'bar!')
     end
 
     on ['353', '372'] do |env|
