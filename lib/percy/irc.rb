@@ -25,6 +25,7 @@ module Percy
     @temp_socket = []
     
     @connected = false
+    @reloading = false
     
     # user methods
     @events = Hash.new []
@@ -281,6 +282,10 @@ module Percy
       @events = Hash.new []
       load $0
       @reloading = false
+    end
+    
+    def self.reloading?
+      @reloading
     end
     
     private

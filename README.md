@@ -222,6 +222,8 @@ Availabe colors through the `COLORS` hash:
 ## Reloading
 You can reload your source files with `Percy::IRC.reload` (or just `reload`) without restarting the bot. It is a simple `load $0` where all events are erased and added from the sources again.
 
+You can check for a reloading process with `Percy::IRC.reloading?` (or just `reloading?`) which is `false` by default, `true` while and `false` after reloading.
+
 ## License
 Copyright (c) 2009, 2010 Tobias Bühlmann
 
