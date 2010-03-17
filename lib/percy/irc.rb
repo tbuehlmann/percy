@@ -251,17 +251,30 @@ module Percy
     end
     
     # on method
-    def self.on(type = :channel, match = //, &block)
-      unless @listened_types.include?(type) || type =~ /^\d\d\d$/
-        raise ArgumentError, "#{type} is not a supported type"
+    def self.on(type = [:channel], match = //, &block)
+      if (type.is_a?(Symbol) || type.is_a?(String))
+        type = [type]
       end
       
-      @events[type] = [] if @events[type].empty? # @events' default value is [], but it's not possible to add elements to it (weird!)
-      case type
-      when :channel || :query
-        @events[type] << {:match => match, :proc => block}
-      else
-        @events[type] << block
+      if type.is_a? Array
+        type.each do |t|
+          unless @listened_types.include?(t) || t =~ /^\d\d\d$/
+            raise ArgumentError, "#{t} is not a supported type"
+          end
+          
+          if @events[t].empty?
+            @events[t] = [] # @events' default value is [], but it's not possible to add elements to it (weird!)
+          end
+          
+          case t
+          when :channel
+            @events[t] << {:match => match, :proc => block}
+          when :query
+            @events[t] << {:match => match, :proc => block}
+          else
+            @events[t] << block
+          end
+        end
       end
     end
     
@@ -492,28 +505,28 @@ module Percy
         self.raw message.chomp.gsub('PING', 'PONG')
       
       when /^:\S+ (\d\d\d) /
-        self.parse_type($1, :params => $')
+        self.parse_type($1, :type => $1.to_sym, :params => $')
       
       when /^:(\S+)!(\S+)@(\S+) PRIVMSG #(\S+) :/
-        self.parse_type(:channel, :nick => $1, :user => $2, :host => $3, :channel => "##{$4}", :message => $')
+        self.parse_type(:channel, :type => :channel, :nick => $1, :user => $2, :host => $3, :channel => "##{$4}", :message => $')
       
       when /^:(\S+)!(\S+)@(\S+) PRIVMSG \S+ :/
-        self.parse_type(:query, :nick => $1, :user => $2, :host => $3, :message => $')
+        self.parse_type(:query, :type => :query, :nick => $1, :user => $2, :host => $3, :message => $')
       
       when /^:(\S+)!(\S+)@(\S+) JOIN :*(\S+)$/
-        self.parse_type(:join, :nick => $1, :user => $2, :host => $3, :channel => $4)
+        self.parse_type(:join, :type => :join, :nick => $1, :user => $2, :host => $3, :channel => $4)
       
       when /^:(\S+)!(\S+)@(\S+) PART (\S+)/
-        self.parse_type(:part, :nick => $1, :user => $2, :host => $3, :channel => $4, :message => $'.sub(' :', ''))
+        self.parse_type(:part, :type => :part, :nick => $1, :user => $2, :host => $3, :channel => $4, :message => $'.sub(' :', ''))
       
       when /^:(\S+)!(\S+)@(\S+) QUIT/
-        self.parse_type(:quit, :nick => $1, :user => $2, :host => $3, :message => $'.sub(' :', ''))
+        self.parse_type(:quit, :type => :quit, :nick => $1, :user => $2, :host => $3, :message => $'.sub(' :', ''))
       
       when /^:(\S+)!(\S+)@(\S+) NICK :/
-        self.parse_type(:nickchange, :nick => $1, :user => $2, :host => $3, :new_nick => $')
+        self.parse_type(:nickchange, :type => :nickchange, :nick => $1, :user => $2, :host => $3, :new_nick => $')
       
       when /^:(\S+)!(\S+)@(\S+) KICK (\S+) (\S+) :/
-        self.parse_type(:kick, :nick => $1, :user => $2, :host => $3, :channel => $4, :victim => $5, :reason => $')
+        self.parse_type(:kick, :type => :kick, :nick => $1, :user => $2, :host => $3, :channel => $4, :victim => $5, :reason => $')
       end
       
       if @observers > 0

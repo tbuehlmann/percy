@@ -41,7 +41,8 @@ No variables.
     end
 Variables:
 
-<tt>env[:nick]<br />
+<tt>env[:type]<br />
+env[:nick]<br />
 env[:user]<br />
 env[:host]<br />
 env[:channel]<br />
@@ -53,7 +54,8 @@ env[:message]</tt>
     end
 Variables:
 
-<tt>env[:nick]<br />
+<tt>env[:type]<br />
+env[:nick]<br />
 env[:user]<br />
 env[:host]<br />
 env[:message]</tt>
@@ -64,7 +66,8 @@ env[:message]</tt>
     end
 Variables:
 
-<tt>env[:nick]<br />
+<tt>env[:type]<br />
+env[:nick]<br />
 env[:user]<br />
 env[:host]<br />
 env[:channel]</tt>
@@ -75,7 +78,8 @@ env[:channel]</tt>
     end
 Variables:
 
-<tt>env[:nick]<br />
+<tt>env[:type]<br />
+env[:nick]<br />
 env[:user]<br />
 env[:host]<br />
 env[:channel]<br />
@@ -87,7 +91,8 @@ env[:message]</tt>
     end
 Variables:
 
-<tt>env[:nick]<br />
+<tt>env[:type]<br />
+env[:nick]<br />
 env[:user]<br />
 env[:host]<br />
 env[:message]</tt>
@@ -98,7 +103,8 @@ env[:message]</tt>
     end
 Variables:
 
-<tt>env[:nick]<br />
+<tt>env[:type]<br />
+env[:nick]<br />
 env[:user]<br />
 env[:host]<br />
 env[:new_nick]</tt>
@@ -109,7 +115,8 @@ env[:new_nick]</tt>
     end
 Variables:
 
-<tt>env[:nick]<br />
+<tt>env[:type]<br />
+env[:nick]<br />
 env[:user]<br />
 env[:host]<br />
 env[:channel]<br />
@@ -122,7 +129,21 @@ env[:reason]</tt>
     end
 Variables:
 
-<tt>env[:params]</tt>
+<tt>env[:type]<br />
+env[:params]</tt>
+
+### Multiple event handling
+You can gather types:
+
+    on [:channel, :query], /foo/ do |env|
+      message (env[:channel] || env[:nick]), 'bar!'
+    end
+
+    on ['353', '372'] do |env|
+      message '#that_cool_channel', "I just got a #{env[:type]}."
+    end
+
+You can get the type of event with `env[:type]`, which will be a Symbol like `:channel? , `:query`, `:quit` or `:"353"`.
 
 ## Availabe Class Methods
 
