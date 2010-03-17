@@ -1,4 +1,4 @@
-# Percy 1.4.0
+# Percy 1.4.1
 
 ## Installing Percy
 `sudo gem install percy`
