@@ -22,4 +22,5 @@ def delegate(*methods)
 end
 
 delegate :action, :channel_limit, :configure, :connect, :is_online, :join, :kick, :message,
-         :mode, :nick, :notice, :on, :part, :quit, :raw, :topic, :users_on, :users_with_status_on
+         :mode, :nick, :notice, :on, :part, :quit, :raw, :topic, :users_on, :users_with_status_on,
+         :reload

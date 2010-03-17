@@ -219,6 +219,9 @@ Availabe colors through the `COLORS` hash:
     message '#that_cool_channel',
             "#{COLOR_CODE}#{COLORS[:red]}This is red text.#{UNCOLOR} This is not."
 
+## Reloading
+You can reload your source files with `Percy::IRC.reload` (or just `reload`) without restarting the bot. It is a simple `load $0` where all events are erased and added from the sources again.
+
 ## License
 Copyright (c) 2009, 2010 Tobias Bühlmann
 

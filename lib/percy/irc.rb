@@ -34,12 +34,14 @@ module Percy
     @mutex_observer = Mutex.new
     
     def self.configure(&block)
-      block.call(@config)
-      
-      # logger
-      if @config.logging
-        @traffic_logger = PercyLogger.new(Pathname.new(PERCY_ROOT).join('logs').expand_path, 'traffic.log')
-        @error_logger   = PercyLogger.new(Pathname.new(PERCY_ROOT).join('logs').expand_path, 'error.log')
+      unless @reloading
+        block.call(@config)
+        
+        # logger
+        if @config.logging
+          @traffic_logger = PercyLogger.new(Pathname.new(PERCY_ROOT).join('logs').expand_path, 'traffic.log')
+          @error_logger   = PercyLogger.new(Pathname.new(PERCY_ROOT).join('logs').expand_path, 'error.log')
+        end
       end
     end
     
@@ -264,12 +266,21 @@ module Percy
     
     # connect!
     def self.connect
-      @traffic_logger.info('-- Starting Percy') if @traffic_logger
-      puts "#{Time.now.strftime('%d.%m.%Y %H:%M:%S')} -- Starting Percy"
-      
-      EventMachine::run do
-        @connection = EventMachine::connect(@config.server, @config.port, Connection)
+      unless @reloading
+        @traffic_logger.info('-- Starting Percy') if @traffic_logger
+        puts "#{Time.now.strftime('%d.%m.%Y %H:%M:%S')} -- Starting Percy"
+        
+        EventMachine::run do
+          @connection = EventMachine::connect(@config.server, @config.port, Connection)
+        end
       end
+    end
+    
+    def self.reload
+      @reloading = true
+      @events = Hash.new []
+      load $0
+      @reloading = false
     end
     
     private
