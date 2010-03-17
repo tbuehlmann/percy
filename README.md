@@ -143,7 +143,7 @@ You can gather types:
       message '#that_cool_channel', "I just got a #{env[:type]}."
     end
 
-You can get the type of event with `env[:type]`, which will be a Symbol like `:channel? , `:query`, `:quit` or `:"353"`.
+You can get the type of event with `env[:type]`, which will be a Symbol like `:channel?`, `:query`, `:quit` or `:"353"`.
 
 ## Availabe Class Methods
 
