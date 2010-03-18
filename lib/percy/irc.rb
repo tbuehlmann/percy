@@ -266,10 +266,7 @@ module Percy
             @events[t] = [] # @events' default value is [], but it's not possible to add elements to it (weird!)
           end
           
-          case t
-          when :channel
-            @events[t] << {:match => match, :proc => block}
-          when :query
+          if (t == :channel || t == :query)
             @events[t] << {:match => match, :proc => block}
           else
             @events[t] << block
