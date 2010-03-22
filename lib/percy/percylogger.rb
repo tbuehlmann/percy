@@ -11,7 +11,7 @@ module Percy
     UNKNOWN = 5
     LEVEL   = ['DEBUG', 'INFO', 'WARN', 'ERROR', 'FATAL', 'UNKNOWN']
     
-    attr_accessor :level, :time_format, :file
+    attr_accessor :level, :time_format
     
     def initialize(dirpath = Pathname.new($0).dirname.join('logs').expand_path, filename = 'log.log', level = DEBUG, time_format = '%d.%m.%Y %H:%M:%S')
       @dirpath = dirpath
@@ -32,41 +32,47 @@ module Percy
       @file.sync = true
     end
     
-    def write(severity, message)
+    def debug(*messages)
+      write DEBUG, *messages
+    end
+    
+    def info(*messages)
+      write INFO, *messages
+    end
+    
+    def warn(*messages)
+      write WARN, *messages
+    end
+    
+    def error(*messages)
+      write ERROR, *messages
+    end
+    
+    def fatal(*messages)
+      write FATAL, *messages
+    end
+    
+    def unknown(*messages)
+      write UNKNOWN, *messages
+    end
+    
+    private
+    
+    def write(severity, *messages)
+      raise(ArgumentError, 'Need a message') if messages.empty?
+      raise ArgumentError, 'Need messages that respond to #to_s' if messages.any? { |message| !message.respond_to?(:to_s) }
+      
       begin
         if severity >= @level
           @mutex.synchronize do
-            @file.puts "#{LEVEL[severity]} #{Time.now.strftime(@time_format)} #{message}"
+            messages.each do |message|
+              @file.puts "#{LEVEL[severity]} #{Time.now.strftime(@time_format)} #{message}"
+            end
           end
         end
       rescue => e
-        puts e.message
-        puts e.backtrace.join('\n')
+        puts e.message, *e.backtrace
       end
-    end
-    
-    def debug(message)
-      write DEBUG, message
-    end
-    
-    def info(message)
-      write INFO, message
-    end
-    
-    def warn(message)
-      write WARN, message
-    end
-    
-    def error(message)
-      write ERROR, message
-    end
-    
-    def fatal(message)
-      write FATAL, message
-    end
-    
-    def unknown(message)
-      write UNKNOWN, message
     end
   end
 end

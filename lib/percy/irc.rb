@@ -327,12 +327,7 @@ module Percy
               begin
                 block.call(env)
               rescue => e
-                if @error_logger
-                  @error_logger.error(e.message)
-                  e.backtrace.each do |line|
-                    @error_logger.error(line)
-                  end
-                end
+                @error_logger.error(e.message, *e.backtrace) if @error_logger
               end
             end
           end
@@ -348,12 +343,7 @@ module Percy
                   block.call
                 end
               rescue => e
-                if @error_logger
-                  @error_logger.error(e.message)
-                  e.backtrace.each do |line|
-                    @error_logger.error(line)
-                  end
-                end
+                @error_logger.error(e.message, *e.backtrace) if @error_logger
               end
             end
           end
@@ -366,12 +356,7 @@ module Percy
               begin
                 method[:proc].call(env)
               rescue => e
-                if @error_logger
-                  @error_logger.error(e.message)
-                  e.backtrace.each do |line|
-                    @error_logger.error(line)
-                  end
-                end
+                @error_logger.error(e.message, *e.backtrace) if @error_logger
               end
             end
           end
@@ -399,12 +384,7 @@ module Percy
               begin
                 method[:proc].call(env)
               rescue => e
-                if @error_logger
-                  @error_logger.error(e.message)
-                  e.backtrace.each do |line|
-                    @error_logger.error(line)
-                  end
-                end
+                @error_logger.error(e.message, *e.backtrace) if @error_logger
               end
             end
           end
@@ -416,12 +396,7 @@ module Percy
             begin
               block.call(env)
             rescue => e
-              if @error_logger
-                @error_logger.error(e.message)
-                e.backtrace.each do |line|
-                  @error_logger.error(line)
-                end
-              end
+              @error_logger.error(e.message, *e.backtrace) if @error_logger
             end
           end
         end
@@ -432,12 +407,7 @@ module Percy
             begin
               block.call(env)
             rescue => e
-              if @error_logger
-                @error_logger.error(e.message)
-                e.backtrace.each do |line|
-                  @error_logger.error(line)
-                end
-              end
+              @error_logger.error(e.message, *e.backtrace) if @error_logger
             end
           end
         end
@@ -448,12 +418,7 @@ module Percy
             begin
               block.call(env)
             rescue => e
-              if @error_logger
-                @error_logger.error(e.message)
-                e.backtrace.each do |line|
-                  @error_logger.error(line)
-                end
-              end
+              @error_logger.error(e.message, *e.backtrace) if @error_logger
             end
           end
         end
@@ -464,12 +429,7 @@ module Percy
             begin
               block.call(env)
             rescue => e
-              if @error_logger
-                @error_logger.error(e.message)
-                e.backtrace.each do |line|
-                  @error_logger.error(line)
-                end
-              end
+              @error_logger.error(e.message, *e.backtrace) if @error_logger
             end
           end
         end
@@ -480,12 +440,7 @@ module Percy
             begin
               block.call(env)
             rescue => e
-              if @error_logger
-                @error_logger.error(e.message)
-                e.backtrace.each do |line|
-                  @error_logger.error(line)
-                end
-              end
+              @error_logger.error(e.message, *e.backtrace) if @error_logger
             end
           end
         end
