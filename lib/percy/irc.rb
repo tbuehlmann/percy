@@ -317,53 +317,34 @@ module Percy
       end
     end
     
+    # calls events with its begin; rescue; end
+    def self.call_events(type, env)
+      @events[type].each do |event|
+        Thread.new do
+          begin
+            if ((type == :channel) || (type == :query)) && (env[:message] =~ event[:match])
+              event[:proc].call(env)
+            else
+              event.call(env)
+            end
+          rescue => e
+            @error_logger.error(e.message, *e.backtrace) if @error_logger
+          end
+        end
+      end
+    end
+    
     # parses incoming traffic (types)
     def self.parse_type(type, env = nil)
       case type
-      when /^\d\d\d$/
-        if @events[type]
-          @events[type].each do |block|
-            Thread.new do
-              begin
-                block.call(env)
-              rescue => e
-                @error_logger.error(e.message, *e.backtrace) if @error_logger
-              end
-            end
-          end
+      # :connect
+      when /^376|422$/
+        unless @connected
+          @connected = true
+          self.call_events(:connect, env)
         end
-        
-        # :connect
-        if type =~ /^376|422$/
-          @events[:connect].each do |block|
-            Thread.new do
-              begin
-                unless @connected
-                  @connected = true
-                  block.call
-                end
-              rescue => e
-                @error_logger.error(e.message, *e.backtrace) if @error_logger
-              end
-            end
-          end
-        end
-      
-      when :channel
-        @events[type].each do |method|
-          if env[:message] =~ method[:match]
-            Thread.new do
-              begin
-                method[:proc].call(env)
-              rescue => e
-                @error_logger.error(e.message, *e.backtrace) if @error_logger
-              end
-            end
-          end
-        end
-      
       when :query
-        # version respones
+        # version response
         if env[:message] == "\001VERSION\001"
           self.notice env[:nick], "\001VERSION #{VERSION}\001"
         end
@@ -377,73 +358,9 @@ module Percy
         if env[:message] =~ /\001PING (\d+)\001/
           self.notice env[:nick], "\001PING #{$1}\001"
         end
-        
-        @events[type].each do |method|
-          if env[:message] =~ method[:match]
-            Thread.new do
-              begin
-                method[:proc].call(env)
-              rescue => e
-                @error_logger.error(e.message, *e.backtrace) if @error_logger
-              end
-            end
-          end
-        end
-      
-      when :join
-        @events[type].each do |block|
-          Thread.new do
-            begin
-              block.call(env)
-            rescue => e
-              @error_logger.error(e.message, *e.backtrace) if @error_logger
-            end
-          end
-        end
-      
-      when :part
-        @events[type].each do |block|
-          Thread.new do
-            begin
-              block.call(env)
-            rescue => e
-              @error_logger.error(e.message, *e.backtrace) if @error_logger
-            end
-          end
-        end
-      
-      when :quit
-        @events[type].each do |block|
-          Thread.new do
-            begin
-              block.call(env)
-            rescue => e
-              @error_logger.error(e.message, *e.backtrace) if @error_logger
-            end
-          end
-        end
-      
-      when :nickchange
-        @events[type].each do |block|
-          Thread.new do
-            begin
-              block.call(env)
-            rescue => e
-              @error_logger.error(e.message, *e.backtrace) if @error_logger
-            end
-          end
-        end
-      
-      when :kick
-        @events[type].each do |block|
-          Thread.new do
-            begin
-              block.call(env)
-            rescue => e
-              @error_logger.error(e.message, *e.backtrace) if @error_logger
-            end
-          end
-        end
+        self.call_events(type, env)
+      else
+        self.call_events(type, env)
       end
     end
     
@@ -487,3 +404,5 @@ module Percy
     end
   end
 end
+
+
