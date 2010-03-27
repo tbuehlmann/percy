@@ -3,6 +3,10 @@
 ## Installing Percy
 `sudo gem install percy`
 
+# Getting help
+
+Use the issue tracker on github (http://github.com/tbuehlmann/percy/issues), send me a message or visit me in the channel #percy on irc.freenode.net.
+
 ## Configuring and starting the bot
 
 ### mybot.rb
