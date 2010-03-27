@@ -313,7 +313,7 @@ module Percy
     def self.remove_observer
       @mutex_observer.synchronize do
         @observers -= 1 # remove observer
-        @temp_socket = [] if @observers == 0 # clear @temp_socket if no observers are active
+        @temp_socket.clear if @observers == 0 # clear @temp_socket if no observers are active
       end
     end
     
