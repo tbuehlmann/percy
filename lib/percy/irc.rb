@@ -322,8 +322,8 @@ module Percy
       @events[type].each do |event|
         Thread.new do
           begin
-            if ((type == :channel) || (type == :query)) && (env[:message] =~ event[:match])
-              event[:proc].call(env)
+            if type == :channel || type == :query
+                event[:proc].call(env) if env[:message] =~ event[:match]
             else
               event.call(env)
             end
