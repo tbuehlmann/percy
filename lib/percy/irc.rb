@@ -253,7 +253,7 @@ module Percy
     # on method
     def self.on(type = [:channel], match = //, &block)
       if (type.is_a?(Symbol) || type.is_a?(String))
-        type = [type]
+        type = [type.to_sym]
       end
       
       if type.is_a? Array
