@@ -1,3 +1,6 @@
+# This project is not supported anymore.
+## Since it changed so much and I really don't like Percy anymore, I decided to start a fresh new project. You might want to have a look at [Ponder](http://github.com/tbuehlmann/ponder).
+
 # Percy 1.4.2
 
 ## Installing Percy
